@@ -2,8 +2,12 @@
 
 Content-Management-System für Websites: Seiten, Beiträge und Medien pflegen, sauber ausliefern.
 
-**Stand: Grundgerüst.** Der Server startet und zeigt eine Startseite, die
-Funktionen unten sind geplant.
+**Stand: 0.1.** Seiten und Beiträge in Markdown (ohne rohes HTML), Entwurf
+und Veröffentlichen, Vorschau, Versionen mit Zurückholen, Menü, Medien
+(Bilder, PDF, Video, Audio), Beitragsliste, Sitemap und robots.txt, eigenes
+ruhiges Standarddesign. Redaktion unter `/admin` mit Anmeldung über Keycloak,
+die Website selbst ist öffentlich. Mehrsprachigkeit, Designs und statischer
+Export kommen noch.
 
 ## Geplant
 

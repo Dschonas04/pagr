@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{block "titel" .}}{{.Titel}}{{end}}</title>
+{{block "meta" .}}{{end}}
+<link rel="stylesheet" href="/statisch/site.css">
+</head>
+<body>
+{{if .Vorschau}}<div class="vorschau">Vorschau{{if not .S.Oeffentlich}}: Entwurf, nicht öffentlich{{end}}</div>{{end}}
+<header class="s-kopf">
+  <div class="s-innen">
+    <a class="s-marke" href="/">{{.Titel}}</a>{{if .Untertitel}}<span class="s-unter">{{.Untertitel}}</span>{{end}}
+    <nav>{{range .Menue}}<a href="{{.Pfad}}"{{if eq .Pfad $.Aktuell}} aria-current="page"{{end}}>{{.Titel}}</a>{{end}}</nav>
+  </div>
+</header>
+<main class="s-innen">{{template "inhalt" .}}</main>
+<footer class="s-fuss"><div class="s-innen">{{if .Fuss}}{{.Fuss}}{{else}}{{.Titel}}{{end}}</div></footer>
+</body>
+</html>

@@ -7,6 +7,9 @@ services:
       PAGR_DB: postgres://pagr:${DB_KENNWORT}@db:5432/pagr?sslmode=disable
     ports:
       - "8360:8360"
+    volumes:
+      - einstellungen:/einstellungen
+      - medien:/daten
     depends_on:
       db:
         condition: service_healthy
@@ -28,3 +31,5 @@ services:
 
 volumes:
   db:
+  einstellungen:
+  medien:

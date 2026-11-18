@@ -1,0 +1,20 @@
+{{define "inhalt"}}
+{{$t := .Token}}
+<div class="leiste"><h1>Seiten und Beiträge</h1><a class="knopf" href="/admin/seite/neu?art=beitrag">Neuer Beitrag</a><a class="knopf primaer" href="/admin/seite/neu">Neue Seite</a></div>
+{{if .D.Seiten}}
+<table>
+  <tr><th>Titel</th><th class="weg">Pfad</th><th>Art</th><th>Status</th><th class="weg">Geändert</th><th></th></tr>
+  {{range .D.Seiten}}
+  <tr class="zeile">
+    <td><a href="/admin/seite/{{.ID}}"><strong>{{.Titel}}</strong></a>{{if .ImMenue}} <span class="pille klein">Menü</span>{{end}}</td>
+    <td class="weg muted code">{{.Pfad}}</td>
+    <td>{{if eq .Art "beitrag"}}Beitrag{{else}}Seite{{end}}</td>
+    <td>{{if .Oeffentlich}}<a class="pille gut" href="{{.Pfad}}" target="_blank">veröffentlicht</a>{{else}}<span class="pille">Entwurf</span>{{end}}</td>
+    <td class="weg muted">{{datum .Geaendert}}{{if .Verfasser}} · {{.Verfasser}}{{end}}</td>
+    <td style="text-align:right"><a class="knopf klein" href="/admin/vorschau/{{.ID}}" target="_blank">Vorschau</a></td>
+  </tr>
+  {{end}}
+</table>
+{{else}}<div class="leer">Noch keine Seiten.</div>{{end}}
+<p class="muted klein">Eine Seite mit dem Pfad <span class="code">/beitraege</span> (oder mit <span class="code">[beitraege]</span> im Text) listet alle veröffentlichten Beiträge.</p>
+{{end}}

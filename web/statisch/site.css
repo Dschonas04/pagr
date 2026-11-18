@@ -1,0 +1,33 @@
+/* Standarddesign der Website: ruhig, gut lesbar, hell und dunkel. */
+:root { --bg: #fdfdfc; --text: #1b1b1b; --muted: #6a6a6a; --rand: #e6e6e3; --link: #1d4ed8; color-scheme: light dark; }
+@media (prefers-color-scheme: dark) { :root { --bg: #121212; --text: #e9e9e9; --muted: #9b9b9b; --rand: #2a2a2a; --link: #8ab4ff; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.7 Georgia, "Iowan Old Style", serif; }
+.s-innen { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+.s-kopf { border-bottom: 1px solid var(--rand); font-family: system-ui, sans-serif; }
+.s-kopf .s-innen { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 18px; padding-top: 22px; padding-bottom: 16px; }
+.s-marke { font-weight: 700; font-size: 20px; text-decoration: none; color: inherit; letter-spacing: -0.01em; }
+.s-unter { color: var(--muted); font-size: 14px; }
+.s-kopf nav { display: flex; gap: 16px; margin-left: auto; flex-wrap: wrap; font-size: 15px; }
+.s-kopf nav a { color: var(--muted); text-decoration: none; }
+.s-kopf nav a:hover, .s-kopf nav a[aria-current] { color: var(--text); }
+main { padding-top: 34px; padding-bottom: 60px; }
+h1, h2, h3 { font-family: system-ui, sans-serif; letter-spacing: -0.02em; line-height: 1.25; }
+h1 { font-size: 34px; margin: 0 0 18px; }
+h2 { font-size: 24px; margin: 38px 0 12px; }
+a { color: var(--link); }
+img, video { max-width: 100%; height: auto; border-radius: 6px; }
+pre, code { font: 14px/1.5 ui-monospace, Menlo, monospace; background: color-mix(in srgb, var(--rand) 55%, transparent); border-radius: 4px; }
+code { padding: 1px 5px; }
+pre { padding: 14px; overflow: auto; }
+pre code { background: none; padding: 0; }
+blockquote { margin: 0; padding-left: 16px; border-left: 3px solid var(--rand); color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; font-family: system-ui, sans-serif; }
+th, td { border-bottom: 1px solid var(--rand); padding: 6px 8px; text-align: left; }
+.s-datum { color: var(--muted); font: 13px system-ui, sans-serif; }
+.s-beitraege { margin-top: 30px; display: flex; flex-direction: column; gap: 18px; }
+.s-beitrag { display: flex; flex-direction: column; text-decoration: none; color: inherit; }
+.s-beitrag strong { font-family: system-ui, sans-serif; font-size: 20px; }
+.s-beitrag span:last-child { color: var(--muted); }
+.s-fuss { border-top: 1px solid var(--rand); color: var(--muted); font: 13px system-ui, sans-serif; padding: 20px 0 30px; }
+.vorschau { background: #b7791f; color: #fff; text-align: center; font: 600 13px system-ui, sans-serif; padding: 5px; }

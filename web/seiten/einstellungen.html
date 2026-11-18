@@ -1,0 +1,11 @@
+{{define "inhalt"}}
+<div class="leiste"><h1>Einstellungen</h1><a class="knopf" href="/sso/konten">Konten</a></div>
+<form method="post" action="/admin/einstellungen" class="karte" style="max-width:640px">
+  <input type="hidden" name="token" value="{{.Token}}">
+  <label for="titel">Name der Website</label><input type="text" id="titel" name="titel" value="{{index .D.W "titel"}}">
+  <label for="untertitel">Untertitel</label><input type="text" id="untertitel" name="untertitel" value="{{index .D.W "untertitel"}}">
+  <label for="fuss">Fußzeile (Markdown nicht, einfacher Text)</label><input type="text" id="fuss" name="fuss" value="{{index .D.W "fuss"}}">
+  <label for="adresse">Öffentliche Adresse (für Sitemap), z. B. https://www.example.org</label><input type="url" id="adresse" name="adresse" value="{{index .D.W "adresse"}}">
+  <div style="margin-top:16px"><button class="primaer">Speichern</button></div>
+</form>
+{{end}}

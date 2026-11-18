@@ -1,0 +1,11 @@
+{{define "inhalt"}}
+{{$t := .Token}}{{$s := .D.S}}
+<div class="leiste"><h1>Versionen: {{$s.Titel}}</h1><a class="knopf" href="/admin/seite/{{$s.ID}}">Zurück zur Seite</a></div>
+{{range .D.Versionen}}
+<details class="karte" style="margin-bottom:8px">
+  <summary><strong>{{datum .Erstellt}}</strong> · {{.Titel}}{{if .Verfasser}} · {{.Verfasser}}{{end}}</summary>
+  <pre class="code" style="white-space:pre-wrap;max-height:400px">{{.Inhalt}}</pre>
+  <form method="post" action="/admin/seite/{{$s.ID}}/zurueckholen/{{.ID}}"><input type="hidden" name="token" value="{{$t}}"><button>Diese Version zurückholen</button></form>
+</details>
+{{else}}<div class="leer">Noch keine Versionen.</div>{{end}}
+{{end}}

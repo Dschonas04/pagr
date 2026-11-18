@@ -1,0 +1,17 @@
+{{define "titel"}}{{if ne .S.Pfad "/"}}{{.S.Titel}} · {{end}}{{.Titel}}{{end}}
+{{define "meta"}}{{if .S.Beschreibung}}<meta name="description" content="{{.S.Beschreibung}}">{{end}}
+<meta property="og:title" content="{{.S.Titel}}">{{if .Vorschau}}<meta name="robots" content="noindex">{{end}}{{end}}
+{{define "inhalt"}}
+<article>
+  {{if ne .S.Pfad "/"}}<h1>{{.S.Titel}}</h1>{{end}}
+  {{if eq .S.Art "beitrag"}}<p class="s-datum">{{tag .S.VeroeffentlichtAm}}{{if .S.Verfasser}} · {{.S.Verfasser}}{{end}}</p>{{end}}
+  {{.HTML}}
+</article>
+{{if .Beitraege}}
+<section class="s-beitraege">
+  {{range .Beitraege}}
+  <a class="s-beitrag" href="{{.Pfad}}"><span class="s-datum">{{tag .VeroeffentlichtAm}}</span><strong>{{.Titel}}</strong>{{if .Beschreibung}}<span>{{.Beschreibung}}</span>{{end}}</a>
+  {{end}}
+</section>
+{{end}}
+{{end}}

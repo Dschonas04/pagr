@@ -1,0 +1,24 @@
+{{define "inhalt"}}
+{{$t := .Token}}
+<div class="leiste"><h1>Medien</h1></div>
+<form method="post" action="/admin/medien" enctype="multipart/form-data" class="karte leiste">
+  <input type="hidden" name="token" value="{{$t}}">
+  <input type="file" name="datei" required accept=".jpg,.jpeg,.png,.gif,.webp,.avif,.pdf,.txt,.zip,.mp4,.webm,.mp3">
+  <button class="primaer">Hochladen</button>
+  <span class="muted klein">Bilder, PDF, Video, Audio, ZIP; höchstens 64 MB</span>
+</form>
+<div class="raster" style="margin-top:16px">
+  {{range .D.Medien}}
+  <div class="karte">
+    {{if .Bild}}<a href="/medien/{{.ID}}" target="_blank"><img src="/medien/{{.ID}}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:6px"></a>{{end}}
+    <div style="margin-top:6px;word-break:break-all"><strong>{{.Name}}</strong></div>
+    <div class="muted klein">{{.GroesseText}} · {{tag .Erstellt}}</div>
+    <input type="text" readonly value="/medien/{{.ID}}" class="code klein" style="margin-top:6px" aria-label="Adresse">
+    <form method="post" action="/admin/medien/{{.ID}}/loeschen" data-frage="Datei löschen? Seiten, die sie zeigen, haben dann ein Loch." style="margin-top:6px">
+      <input type="hidden" name="token" value="{{$t}}"><button class="gefahr klein">Löschen</button>
+    </form>
+  </div>
+  {{else}}<div class="leer">Noch keine Medien.</div>{{end}}
+</div>
+{{end}}
+{{define "skripte"}}<script src="/statisch/verwalten.js" defer></script>{{end}}

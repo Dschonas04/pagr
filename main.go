@@ -1,39 +1,50 @@
-// Pagr: Content-Management-System für Websites: Seiten, Beiträge und Medien pflegen, sauber ausliefern.
-//
-// Grundgerüst: der Server startet, liefert die Startseite aus und antwortet auf
-// /healthz und /api/version. Was als Nächstes kommt, steht in der README.
+// Pagr: Content-Management-System für Websites. Seiten und Beiträge in
+// Markdown mit Entwürfen und Versionen, Medienbibliothek, Menü, Sitemap.
+// Die Redaktion liegt unter /admin und braucht eine Anmeldung, die Website
+// selbst ist öffentlich.
 package main
 
 import (
 	"context"
-	"embed"
-	"encoding/json"
 	"errors"
-	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-//go:embed web
-var webDateien embed.FS
-
-// version wird beim Bau gesetzt: -ldflags "-X main.version=v0.1.0".
-var version = "entwicklung"
+type App struct {
+	db     *pgxpool.Pool
+	sso    *SSO
+	v      Vorlagen
+	site   *siteVorlagen
+	medien string
+}
 
 func main() {
-	adresse := ":" + umgebung("PAGR_PORT", "8360")
-	srv := &http.Server{
-		Addr:              adresse,
-		Handler:           neuerMux(),
-		ReadHeaderTimeout: 10 * time.Second,
-	}
-
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	a := &App{
+		db:     datenbank(ctx, umgebung("PAGR_DB", "postgres://pagr:pagr@localhost:5432/pagr?sslmode=disable")),
+		sso:    NeuesSSO("Pagr", umgebung("PAGR_SSO_DATEI", "./einstellungen/sso.json"), "PAGR_SSO_AUS"),
+		v:      ladeVorlagen(),
+		site:   ladeSite(),
+		medien: umgebung("PAGR_MEDIEN", "./medien"),
+	}
+	a.sso.Frei = []string{"/statisch/", "/healthz"}
+	a.sso.Startseite = "/admin"
+	if err := os.MkdirAll(a.medien, 0o750); err != nil {
+		log.Fatalf("Medien: %v", err)
+	}
+
+	adresse := ":" + umgebung("PAGR_PORT", "8360")
+	srv := &http.Server{Addr: adresse, Handler: a.wege(), ReadHeaderTimeout: 10 * time.Second}
 	go func() {
 		log.Printf("Pagr %s lauscht auf %s", version, adresse)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -41,46 +52,68 @@ func main() {
 		}
 	}()
 	<-ctx.Done()
-
 	ende, abbruch := context.WithTimeout(context.Background(), 10*time.Second)
 	defer abbruch()
-	if err := srv.Shutdown(ende); err != nil {
-		log.Printf("Beenden: %v", err)
+	srv.Shutdown(ende)
+}
+
+func (a *App) wege() http.Handler {
+	// Redaktion: hinter der Anmeldung.
+	adm := http.NewServeMux()
+	adm.Handle("GET /statisch/", statisch())
+	a.sso.Wege(adm, a.angemeldet)
+	adm.HandleFunc("GET /admin", a.seitenListe)
+	adm.HandleFunc("GET /admin/seite/{id}", a.seiteFormular)
+	adm.HandleFunc("POST /admin/seite", a.seiteSpeichern)
+	adm.HandleFunc("POST /admin/seite/{id}/loeschen", a.seiteLoeschen)
+	adm.HandleFunc("GET /admin/seite/{id}/versionen", a.versionen)
+	adm.HandleFunc("POST /admin/seite/{id}/zurueckholen/{v}", a.versionZurueck)
+	adm.HandleFunc("GET /admin/vorschau/{id}", a.vorschau)
+	adm.HandleFunc("GET /admin/medien", a.medienListe)
+	adm.HandleFunc("POST /admin/medien", a.medienHochladen)
+	adm.HandleFunc("POST /admin/medien/{id}/loeschen", a.medienLoeschen)
+	adm.HandleFunc("GET /admin/einstellungen", a.einstellungen)
+	adm.HandleFunc("POST /admin/einstellungen", a.einstellungenSpeichern)
+	redaktion := nurAngemeldet(a.sso, adm)
+
+	// Website: öffentlich.
+	pub := http.NewServeMux()
+	pub.HandleFunc("GET /healthz", gesund)
+	pub.Handle("GET /statisch/", statisch())
+	pub.HandleFunc("GET /medien/{id}", a.medium)
+	pub.HandleFunc("GET /sitemap.xml", a.sitemap)
+	pub.HandleFunc("GET /robots.txt", a.robots)
+	pub.HandleFunc("GET /", a.oeffentlich)
+
+	return sicherheitskopf(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p := r.URL.Path
+		if p == "/admin" || strings.HasPrefix(p, "/admin/") || strings.HasPrefix(p, "/sso/") || strings.HasPrefix(p, "/api/") {
+			redaktion.ServeHTTP(w, r)
+			return
+		}
+		pub.ServeHTTP(w, r)
+	}))
+}
+
+func (a *App) angemeldet(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if _, ok := a.sso.Wer(r); ok || (!a.sso.Geschuetzt() && a.sso.EinrichtungErlaubt(w, r)) {
+			h(w, r)
+			return
+		}
+		http.Error(w, "Bitte anmelden", http.StatusUnauthorized)
 	}
 }
 
-func neuerMux() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.Write([]byte("ok\n"))
-	})
-	mux.HandleFunc("GET /api/version", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"name": "pagr", "version": version})
-	})
-	web, err := fs.Sub(webDateien, "web")
-	if err != nil {
-		log.Fatal(err)
-	}
-	mux.Handle("GET /", http.FileServerFS(web))
-	return sicherheitskopf(mux)
+func (a *App) daten(r *http.Request, titel, nav string, d any) Daten {
+	n, _ := a.sso.Wer(r)
+	return Daten{App: "Pagr", Titel: titel, Nav: nav, Nutzer: n, D: d}
 }
 
-// sicherheitskopf setzt die Kopfzeilen, die jede Antwort tragen soll.
-func sicherheitskopf(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		k := w.Header()
-		k.Set("X-Content-Type-Options", "nosniff")
-		k.Set("Referrer-Policy", "no-referrer")
-		k.Set("X-Frame-Options", "DENY")
-		k.Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'")
-		next.ServeHTTP(w, r)
-	})
-}
-
-func umgebung(name, vorgabe string) string {
-	if v := os.Getenv(name); v != "" {
-		return v
+func (a *App) wer(r *http.Request) string {
+	n, _ := a.sso.Wer(r)
+	if n.Name != "" {
+		return n.Name
 	}
-	return vorgabe
+	return n.Nutzer
 }
