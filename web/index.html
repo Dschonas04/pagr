@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pagr</title>
+<style>
+  :root { --bg: #fafafa; --text: #161616; --muted: #666; --rand: #e3e3e3; color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #121212; --text: #eee; --muted: #9a9a9a; --rand: #2a2a2a; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, sans-serif; }
+  main { max-width: 640px; margin: 12vh auto; padding: 0 16px; }
+  h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -0.02em; }
+  p { color: var(--muted); margin: 0 0 24px; }
+  ul { padding-left: 18px; border-top: 1px solid var(--rand); padding-top: 16px; }
+  li { margin: 4px 0; }
+  .stand { font-size: 12px; color: var(--muted); margin-top: 32px; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Pagr</h1>
+    <p>Content-Management-System für Websites: Seiten, Beiträge und Medien pflegen, sauber ausliefern.</p>
+    <ul>
+      <li>Seiten und Beiträge mit Blockeditor, Entwürfen und zeitgesteuerter Veröffentlichung</li>
+      <li>Versionen jeder Seite, Vergleich und Zurückholen</li>
+      <li>Medienbibliothek mit Bildgrößen und WebP, Ablage lokal oder in S3 (MinIO)</li>
+      <li>Menüs und Seitenbaum, sprechende Adressen, Weiterleitungen</li>
+      <li>Designs als Go-Templates, ein schlichtes Standarddesign dabei</li>
+      <li>Mehrsprachig: jede Seite in mehreren Sprachen, Sprachwahl im Menü</li>
+      <li>SEO: Titel, Beschreibung, Sitemap, Open Graph, schnelle Auslieferung mit Cache</li>
+      <li>Rollen Autor, Redaktion, Admin; Anmeldung über Keycloak</li>
+      <li>Statischer Export der ganzen Website als Alternative zur Live-Auslieferung</li>
+    </ul>
+    <div class="stand">In Vorbereitung</div>
+  </main>
+</body>
+</html>

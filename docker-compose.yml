@@ -1,0 +1,30 @@
+services:
+  pagr:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PAGR_DB: postgres://pagr:${DB_KENNWORT}@db:5432/pagr?sslmode=disable
+    ports:
+      - "8360:8360"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pagr
+      POSTGRES_PASSWORD: ${DB_KENNWORT}
+      POSTGRES_DB: pagr
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pagr -d pagr"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db:
