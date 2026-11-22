@@ -79,6 +79,8 @@ func (a *App) wege() http.Handler {
 	// Website: öffentlich.
 	pub := http.NewServeMux()
 	pub.HandleFunc("GET /healthz", gesund)
+	pub.HandleFunc("GET /favicon.svg", logo)
+	pub.HandleFunc("GET /favicon.ico", logo)
 	pub.Handle("GET /statisch/", statisch())
 	pub.HandleFunc("GET /medien/{id}", a.medium)
 	pub.HandleFunc("GET /sitemap.xml", a.sitemap)
