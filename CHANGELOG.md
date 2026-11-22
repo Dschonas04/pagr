@@ -2,6 +2,9 @@
 
 ## Unveröffentlicht
 
+- Oberfläche überarbeitet: Kopfzeile, Tabellen und Felder am Handy, Anmeldeseite in den Farben der App.
+- Logo auf der Anmeldeseite wird wieder ausgeliefert, der Hinweis zur Ersteinrichtung stimmt.
+- Sicherheit: Anmeldung, Konten und Verwaltung nur noch für Admins. Admin ist, wer sich zuerst anmeldet.
 - Seiten und Beiträge in Markdown (GFM, ohne rohes HTML), Pfade aus dem Titel, Entwurf und Veröffentlichen, Vorschau für Entwürfe.
 - Versionen: jede gespeicherte Fassung, die letzten 50 je Seite, mit Zurückholen.
 - Medienbibliothek: Bilder, PDF, Video, Audio, ZIP bis 64 MB; SVG und HTML werden abgelehnt. Einfügen per Klick im Editor.

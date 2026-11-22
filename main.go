@@ -72,8 +72,8 @@ func (a *App) wege() http.Handler {
 	adm.HandleFunc("GET /admin/medien", a.medienListe)
 	adm.HandleFunc("POST /admin/medien", a.medienHochladen)
 	adm.HandleFunc("POST /admin/medien/{id}/loeschen", a.medienLoeschen)
-	adm.HandleFunc("GET /admin/einstellungen", a.einstellungen)
-	adm.HandleFunc("POST /admin/einstellungen", a.einstellungenSpeichern)
+	adm.HandleFunc("GET /admin/einstellungen", a.nurAdmin(a.einstellungen))
+	adm.HandleFunc("POST /admin/einstellungen", a.nurAdmin(a.einstellungenSpeichern))
 	redaktion := nurAngemeldet(a.sso, adm)
 
 	// Website: öffentlich.
@@ -99,17 +99,27 @@ func (a *App) wege() http.Handler {
 
 func (a *App) angemeldet(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := a.sso.Wer(r); ok || (!a.sso.Geschuetzt() && a.sso.EinrichtungErlaubt(w, r)) {
+		// Anmeldung und Konten verwalten nur Admins; vor der Einrichtung, wer
+		// den Code aus dem Log hat.
+		if !a.sso.Geschuetzt() && a.sso.EinrichtungErlaubt(w, r) {
 			h(w, r)
 			return
 		}
-		http.Error(w, "Bitte anmelden", http.StatusUnauthorized)
+		if _, ok := a.sso.Wer(r); !ok {
+			http.Error(w, "Bitte anmelden", http.StatusUnauthorized)
+			return
+		}
+		if !a.istAdmin(r) {
+			http.Error(w, "Nur für Admins", http.StatusForbidden)
+			return
+		}
+		h(w, r)
 	}
 }
 
 func (a *App) daten(r *http.Request, titel, nav string, d any) Daten {
 	n, _ := a.sso.Wer(r)
-	return Daten{App: "Pagr", Titel: titel, Nav: nav, Nutzer: n, D: d}
+	return Daten{App: "Pagr", Titel: titel, Nav: nav, Nutzer: n, Admin: a.istAdmin(r), D: d}
 }
 
 func (a *App) wer(r *http.Request) string {
