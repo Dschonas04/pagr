@@ -2,6 +2,7 @@
 
 ## Unveröffentlicht
 
+- Sicherheit: Die SSO-Einstellung hat einen Leser für Prüfung und Speichern und lehnt Unlesbares ab.
 - Doppelte id im Seitengerüst behoben.
 - Rollen Autor und Redaktion, Zeitplan, Weiterleitungen, Sprachen, drei Designs, RSS, statischer Export.
 - Editor mit Bausteinen und Vorschau, Bildbreiten, Versionsvergleich.
