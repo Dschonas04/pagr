@@ -40,6 +40,7 @@ func main() {
 	}
 	a.admins = adminListe(umgebung("PAGR_ADMIN", ""))
 	a.sso.ErstesKonto = a.ersterAdmin
+	a.sso.KontoWeg = a.adminEntziehen
 	a.sso.Frei = []string{"/statisch/", "/healthz"}
 	a.sso.Startseite = "/admin"
 	if err := os.MkdirAll(a.medien, 0o750); err != nil {
@@ -102,6 +103,9 @@ func (a *App) wege() http.Handler {
 
 func (a *App) angemeldet(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if !inhaltZuerst(w, r) {
+			return
+		}
 		// Anmeldung und Konten verwalten nur Admins; vor der Einrichtung, wer
 		// den Code aus dem Log hat.
 		if !a.sso.Geschuetzt() && a.sso.EinrichtungErlaubt(w, r) {
