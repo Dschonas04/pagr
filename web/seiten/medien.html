@@ -10,13 +10,13 @@
 <div class="raster" style="margin-top:16px">
   {{range .D.Medien}}
   <div class="karte">
-    {{if .Bild}}<a href="/medien/{{.ID}}" target="_blank"><img src="/medien/{{.ID}}" alt="" style="width:100%;height:140px;object-fit:cover;border-radius:6px"></a>{{end}}
+    {{if .Bild}}<a href="/medien/{{.ID}}" target="_blank"><img src="/medien/{{.ID}}?b=480" alt="" loading="lazy" style="width:100%;height:140px;object-fit:cover;border-radius:6px"></a>{{end}}
     <div style="margin-top:6px;word-break:break-all"><strong>{{.Name}}</strong></div>
     <div class="muted klein">{{.GroesseText}} · {{tag .Erstellt}}</div>
     <input type="text" readonly value="/medien/{{.ID}}" class="code klein" style="margin-top:6px" aria-label="Adresse">
-    <form method="post" action="/admin/medien/{{.ID}}/loeschen" data-frage="Datei löschen? Seiten, die sie zeigen, haben dann ein Loch." style="margin-top:6px">
+    {{if $.Redaktion}}<form method="post" action="/admin/medien/{{.ID}}/loeschen" data-frage="Datei löschen? Seiten, die sie zeigen, haben dann ein Loch." style="margin-top:6px">
       <input type="hidden" name="token" value="{{$t}}"><button class="gefahr klein">Löschen</button>
-    </form>
+    </form>{{end}}
   </div>
   {{else}}<div class="leer">Noch keine Medien.</div>{{end}}
 </div>

@@ -5,8 +5,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,8 +22,9 @@ import (
 )
 
 type App struct {
+	exportSperre sync.Mutex // ein Export nach dem anderen
 	// verwaltung: Änderungen an Konten, Rollen und Anmeldung laufen nacheinander.
-	verwaltung sync.Mutex
+	verwaltung Sperre
 	admins     []string // Vorgabe des Betreibers
 	db         *pgxpool.Pool
 	sso        *SSO
@@ -74,11 +77,18 @@ func (a *App) wege() http.Handler {
 	adm.HandleFunc("POST /admin/seite", a.seiteSpeichern)
 	adm.HandleFunc("POST /admin/seite/{id}/loeschen", a.seiteLoeschen)
 	adm.HandleFunc("GET /admin/seite/{id}/versionen", a.versionen)
-	adm.HandleFunc("POST /admin/seite/{id}/zurueckholen/{v}", a.versionZurueck)
+	adm.HandleFunc("GET /admin/seite/{id}/vergleich/{v}", a.versionVergleich)
+	adm.HandleFunc("POST /admin/markdown", a.markdownVorschau)
+	adm.HandleFunc("GET /admin/personen", a.nurAdmin(a.personenSeite))
+	adm.HandleFunc("POST /admin/personen", a.personSetzen)
+	adm.HandleFunc("GET /admin/weiterleitungen", a.nurRedaktion(a.weiterleitungen))
+	adm.HandleFunc("POST /admin/weiterleitungen", a.nurRedaktion(a.weiterleitungSpeichern))
+	adm.HandleFunc("POST /admin/weiterleitungen/loeschen", a.nurRedaktion(a.weiterleitungLoeschen))
+	adm.HandleFunc("GET /admin/export", a.nurRedaktion(a.export))
 	adm.HandleFunc("GET /admin/vorschau/{id}", a.vorschau)
 	adm.HandleFunc("GET /admin/medien", a.medienListe)
 	adm.HandleFunc("POST /admin/medien", a.medienHochladen)
-	adm.HandleFunc("POST /admin/medien/{id}/loeschen", a.medienLoeschen)
+	adm.HandleFunc("POST /admin/medien/{id}/loeschen", a.nurRedaktion(a.medienLoeschen))
 	adm.HandleFunc("GET /admin/einstellungen", a.nurAdmin(a.einstellungen))
 	adm.HandleFunc("POST /admin/einstellungen", a.nurAdmin(a.einstellungenSpeichern))
 	redaktion := nurAngemeldet(a.sso, adm)
@@ -92,6 +102,7 @@ func (a *App) wege() http.Handler {
 	pub.HandleFunc("GET /medien/{id}", a.medium)
 	pub.HandleFunc("GET /sitemap.xml", a.sitemap)
 	pub.HandleFunc("GET /robots.txt", a.robots)
+	pub.HandleFunc("GET /feed.xml", a.feed)
 	pub.HandleFunc("GET /", a.oeffentlich)
 
 	return sicherheitskopf(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -105,37 +116,66 @@ func (a *App) wege() http.Handler {
 }
 
 func (a *App) angemeldet(h http.HandlerFunc) http.HandlerFunc {
+	// Anmeldung und Konten verwalten nur Admins; vor der Einrichtung, wer den
+	// Code aus dem Log hat.
+	darf := func(w http.ResponseWriter, r *http.Request) bool {
+		if !a.sso.Geschuetzt() && a.sso.EinrichtungErlaubt(w, r) {
+			return true
+		}
+		if _, ok := a.sso.Wer(r); !ok {
+			http.Error(w, "Bitte anmelden", http.StatusUnauthorized)
+			return false
+		}
+		if !a.istAdmin(r) {
+			http.Error(w, "Nur für Admins", http.StatusForbidden)
+			return false
+		}
+		return true
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !inhaltZuerst(w, r) {
 			return
 		}
+		// Lesen und Testen ändern nichts und brauchen keine Sperre.
+		if r.Method == http.MethodGet || r.Method == http.MethodHead || r.URL.Path == "/api/sso/testen" {
+			if darf(w, r) {
+				h(w, r)
+			}
+			return
+		}
+		// Der Anbieter wird vor der Sperre gefragt, und nur von Admins.
+		if r.URL.Path == "/api/sso/einstellungen" {
+			if !darf(w, r) {
+				return
+			}
+			roh, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "Die Anfrage ist unvollständig", http.StatusBadRequest)
+				return
+			}
+			r.Body = io.NopCloser(bytes.NewReader(roh))
+			var ok bool
+			if r, ok = a.sso.ausstellerVorab(w, r, roh); !ok {
+				return
+			}
+		}
 		// Erst sperren, dann prüfen: bis zum Speichern kann niemand die Rechte
 		// entziehen, auf die sich die Prüfung stützt.
-		if r.Method != http.MethodGet && r.Method != http.MethodHead {
-			a.verwaltung.Lock()
-			defer a.verwaltung.Unlock()
-		}
-		// Anmeldung und Konten verwalten nur Admins; vor der Einrichtung, wer
-		// den Code aus dem Log hat.
-		if !a.sso.Geschuetzt() && a.sso.EinrichtungErlaubt(w, r) {
-			h(w, r)
-			return
-		}
-		if _, ok := a.sso.Wer(r); !ok {
-			http.Error(w, "Bitte anmelden", http.StatusUnauthorized)
-			return
-		}
-		if !a.istAdmin(r) {
-			http.Error(w, "Nur für Admins", http.StatusForbidden)
-			return
-		}
-		h(w, r)
+		a.verwaltung.fuehreAus(w, r, func(w http.ResponseWriter, r *http.Request) {
+			if darf(w, r) {
+				h(w, r)
+			}
+		})
 	}
 }
 
 func (a *App) daten(r *http.Request, titel, nav string, d any) Daten {
 	n, _ := a.sso.Wer(r)
-	return Daten{App: "Pagr", Titel: titel, Nav: nav, Nutzer: n, Admin: a.istAdmin(r), D: d}
+	p, err := a.person(r)
+	if err != nil {
+		log.Printf("personen: %v", err)
+	}
+	return Daten{App: "Pagr", Titel: titel, Nav: nav, Nutzer: n, Admin: p.Rolle == rolleAdmin, Redaktion: p.darfVeroeffentlichen(), D: d}
 }
 
 func (a *App) wer(r *http.Request) string {

@@ -156,15 +156,16 @@ func ladeVorlagen() Vorlagen {
 
 // Daten ist, was jede Seite bekommt.
 type Daten struct {
-	App     string
-	Titel   string
-	Nav     string
-	Nutzer  SSONutzer
-	Admin   bool
-	Token   string
-	Hinweis string
-	Fehler  string
-	D       any
+	App       string
+	Titel     string
+	Nav       string
+	Nutzer    SSONutzer
+	Admin     bool
+	Redaktion bool
+	Token     string
+	Hinweis   string
+	Fehler    string
+	D         any
 }
 
 func (v Vorlagen) zeigen(w http.ResponseWriter, r *http.Request, seite string, d Daten) {

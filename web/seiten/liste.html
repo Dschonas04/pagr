@@ -6,10 +6,10 @@
   <tr><th>Titel</th><th class="weg">Pfad</th><th>Art</th><th>Status</th><th class="weg">Geändert</th><th></th></tr>
   {{range .D.Seiten}}
   <tr class="zeile">
-    <td><a href="/admin/seite/{{.ID}}"><strong>{{.Titel}}</strong></a>{{if .ImMenue}} <span class="pille klein">Menü</span>{{end}}</td>
+    <td><a href="/admin/seite/{{.ID}}"><strong>{{.Titel}}</strong></a>{{if .ImMenue}} <span class="pille klein">Menü</span>{{end}} <span class="muted klein">{{.Sprache}}</span></td>
     <td class="weg muted code">{{.Pfad}}</td>
     <td>{{if eq .Art "beitrag"}}Beitrag{{else}}Seite{{end}}</td>
-    <td>{{if .Oeffentlich}}<a class="pille gut" href="{{.Pfad}}" target="_blank">veröffentlicht</a>{{else}}<span class="pille">Entwurf</span>{{end}}</td>
+    <td>{{if .Geplant}}<span class="pille info" title="{{datum .VeroeffentlichtAm}}">geplant</span>{{else if .Oeffentlich}}<a class="pille gut" href="{{.Pfad}}" target="_blank">veröffentlicht</a>{{else}}<span class="pille">Entwurf</span>{{end}}</td>
     <td class="weg muted">{{datum .Geaendert}}{{if .Verfasser}} · {{.Verfasser}}{{end}}</td>
     <td style="text-align:right"><a class="knopf klein" href="/admin/vorschau/{{.ID}}" target="_blank">Vorschau</a></td>
   </tr>

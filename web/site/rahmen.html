@@ -1,18 +1,21 @@
 <!doctype html>
-<html lang="de">
+<html lang="{{or .Sprache "de"}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{block "titel" .}}{{.Titel}}{{end}}</title>
 {{block "meta" .}}{{end}}
 <link rel="stylesheet" href="/statisch/site.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/rss+xml" title="{{.Titel}}" href="/feed.xml">
 </head>
-<body>
+<body{{if .Design}} class="design-{{.Design}}"{{end}}>
 {{if .Vorschau}}<div class="vorschau">Vorschau{{if not .S.Oeffentlich}}: Entwurf, nicht öffentlich{{end}}</div>{{end}}
 <header class="s-kopf">
   <div class="s-innen">
     <a class="s-marke" href="/">{{.Titel}}</a>{{if .Untertitel}}<span class="s-unter">{{.Untertitel}}</span>{{end}}
     <nav>{{range .Menue}}<a href="{{.Pfad}}"{{if eq .Pfad $.Aktuell}} aria-current="page"{{end}}>{{.Titel}}</a>{{end}}</nav>
+    {{if .Uebersetzungen}}<div class="s-sprachen">{{range .Uebersetzungen}}<a href="{{.Pfad}}" hreflang="{{.Sprache}}" lang="{{.Sprache}}" title="{{.Titel}}">{{.Sprache}}</a>{{end}}</div>{{end}}
   </div>
 </header>
 <main class="s-innen">{{template "inhalt" .}}</main>

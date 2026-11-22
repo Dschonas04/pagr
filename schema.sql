@@ -48,3 +48,20 @@ CREATE TABLE IF NOT EXISTS admins (
 	kennung text PRIMARY KEY,
 	seit    timestamptz NOT NULL DEFAULT now()
 );
+
+ALTER TABLE seiten ADD COLUMN IF NOT EXISTS besitzer text NOT NULL DEFAULT '';
+ALTER TABLE seiten ADD COLUMN IF NOT EXISTS sprache text NOT NULL DEFAULT 'de';
+ALTER TABLE seiten ADD COLUMN IF NOT EXISTS uebersetzung_von uuid REFERENCES seiten(id) ON DELETE SET NULL;
+
+-- Wer sich angemeldet hat. Admins stehen in admins, alle anderen sind Autor oder Redaktion.
+CREATE TABLE IF NOT EXISTS personen (
+	kennung text PRIMARY KEY,
+	name    text NOT NULL DEFAULT '',
+	rolle   text NOT NULL DEFAULT 'autor',
+	zuletzt timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS weiterleitungen (
+	von  text PRIMARY KEY,
+	nach text NOT NULL
+);

@@ -1,0 +1,14 @@
+{{define "inhalt"}}{{$t := .Token}}
+<div class="leiste"><h1>Personen</h1><a class="knopf" href="/admin/einstellungen">Zurück</a></div>
+<p class="muted">Autoren schreiben eigene Entwürfe. Die Redaktion veröffentlicht, pflegt Medien und Weiterleitungen.</p>
+{{if .D.Personen}}<table>
+<tr><th>Name</th><th>Rolle</th></tr>
+{{range .D.Personen}}<tr><td>{{.Name}}<div class="muted klein code umbruch">{{.Kennung}}</div></td><td>
+{{if eq .Rolle "admin"}}<span class="pille info">Admin</span>{{else}}
+<form method="post" action="/admin/personen" class="leiste eng">
+  <input type="hidden" name="token" value="{{$t}}"><input type="hidden" name="kennung" value="{{.Kennung}}">
+  <select name="rolle" aria-label="Rolle"><option value="autor"{{if eq .Rolle "autor"}} selected{{end}}>Autor</option><option value="redaktion"{{if eq .Rolle "redaktion"}} selected{{end}}>Redaktion</option></select>
+  <button class="klein">Speichern</button>
+</form>{{end}}</td></tr>{{end}}
+</table>{{else}}<div class="leer"><strong>Noch niemand</strong>Wer sich anmeldet, erscheint hier.</div>{{end}}
+{{end}}

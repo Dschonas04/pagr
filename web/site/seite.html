@@ -1,6 +1,10 @@
 {{define "titel"}}{{if ne .S.Pfad "/"}}{{.S.Titel}} · {{end}}{{.Titel}}{{end}}
 {{define "meta"}}{{if .S.Beschreibung}}<meta name="description" content="{{.S.Beschreibung}}">{{end}}
-<meta property="og:title" content="{{.S.Titel}}">{{if .Vorschau}}<meta name="robots" content="noindex">{{end}}{{end}}
+<meta property="og:title" content="{{.S.Titel}}">
+<meta property="og:type" content="{{if eq .S.Art "beitrag"}}article{{else}}website{{end}}">
+{{if .S.Beschreibung}}<meta property="og:description" content="{{.S.Beschreibung}}">{{end}}
+{{if .Adresse}}<meta property="og:url" content="{{.Adresse}}"><link rel="canonical" href="{{.Adresse}}">{{end}}
+{{range .Uebersetzungen}}<link rel="alternate" hreflang="{{.Sprache}}" href="{{.Pfad}}">{{end}}{{if .Vorschau}}<meta name="robots" content="noindex">{{end}}{{end}}
 {{define "inhalt"}}
 <article>
   {{if ne .S.Pfad "/"}}<h1>{{.S.Titel}}</h1>{{end}}

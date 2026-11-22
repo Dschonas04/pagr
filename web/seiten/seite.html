@@ -4,14 +4,28 @@
   <h1>{{if $s.ID}}{{$s.Titel}}{{else if eq $s.Art "beitrag"}}Neuer Beitrag{{else}}Neue Seite{{end}}</h1>
   {{if $s.ID}}<a class="knopf" href="/admin/vorschau/{{$s.ID}}" target="_blank">Vorschau</a><a class="knopf" href="/admin/seite/{{$s.ID}}/versionen">Versionen</a>{{end}}
 </div>
+{{with .D.Alt}}<div class="hinweis" role="status">Fassung vom {{datum .Erstellt}} ist geladen. Live wird sie erst mit dem Speichern.</div>{{end}}
+{{if not .D.Darf}}<div class="hinweis" role="status">Nur lesen: ändern kann das die Redaktion.</div>{{end}}
 <form method="post" action="/admin/seite" class="zwei">
   <input type="hidden" name="token" value="{{.Token}}"><input type="hidden" name="id" value="{{$s.ID}}">
   <div class="karte">
     <label for="titel">Titel</label>
     <input type="text" id="titel" name="titel" value="{{$s.Titel}}" required>
     <label for="inhalt">Inhalt (Markdown)</label>
+    <div class="bausteine">
+      <button type="button" class="klein" data-baustein="## %\n" data-leer="Überschrift" data-zeile="1">Überschrift</button>
+      <button type="button" class="klein" data-baustein="**%**" data-leer="fett">Fett</button>
+      <button type="button" class="klein" data-baustein="*%*" data-leer="kursiv">Kursiv</button>
+      <button type="button" class="klein" data-baustein="[%](https://)" data-leer="Link">Link</button>
+      <button type="button" class="klein" data-baustein="- %\n" data-leer="Punkt" data-zeile="1">Liste</button>
+      <button type="button" class="klein" data-baustein="> %\n" data-leer="Zitat" data-zeile="1">Zitat</button>
+      <button type="button" class="klein" data-baustein="```\n%\n```\n" data-leer="Code" data-zeile="1">Code</button>
+      <button type="button" class="klein" data-baustein="| % | Spalte |\n| --- | --- |\n| Wert | Wert |\n" data-leer="Spalte" data-zeile="1">Tabelle</button>
+      <button type="button" class="klein" id="schau-knopf" aria-pressed="false">Vorschau</button>
+    </div>
     <textarea id="inhalt" name="inhalt" class="code" rows="26">{{$s.Inhalt}}</textarea>
-    <p class="muted klein"># Überschrift, **fett**, *kursiv*, [Link](https://…), ![Bild](/medien/…), - Liste, | Tabelle |</p>
+    <div id="schau" class="schau" aria-live="polite" hidden></div>
+    <p class="muted klein">Alt und Pfeil verschieben einen Absatz, Strg+S speichert, Esc verlässt das Feld.</p>
   </div>
   <div class="karte" style="align-self:start">
     <label for="art">Art</label>
@@ -20,21 +34,35 @@
     <input type="text" id="pfad" name="pfad" value="{{$s.Pfad}}" class="code" placeholder="/ueber-uns">
     <label for="beschreibung">Beschreibung für Suchmaschinen</label>
     <textarea id="beschreibung" name="beschreibung" rows="3">{{$s.Beschreibung}}</textarea>
+    <div class="feld-reihe">
+      <div><label for="sprache">Sprache</label><select id="sprache" name="sprache">{{range .D.Sprachen}}<option{{if eq . $s.Sprache}} selected{{end}}>{{.}}</option>{{end}}</select></div>
+    </div>
+    <label for="uebersetzung_von">Übersetzung von</label>
+    <select id="uebersetzung_von" name="uebersetzung_von"><option value="">keiner Seite</option>{{range .D.Originale}}<option value="{{.ID}}"{{if eq .ID $s.UebersetzungVon}} selected{{end}}>{{.Titel}} ({{.Sprache}})</option>{{end}}</select>
+    {{if .Redaktion}}
+    <label for="wann">Veröffentlichen am (leer: sofort)</label>
+    <input type="datetime-local" id="wann" name="wann" value="{{feld $s.VeroeffentlichtAm}}">
     <label><input type="checkbox" name="im_menue" value="ja"{{if $s.ImMenue}} checked{{end}}> Im Menü zeigen</label>
     <label for="menue_reihe">Platz im Menü</label>
     <input type="number" id="menue_reihe" name="menue_reihe" value="{{$s.MenueReihe}}">
+    {{end}}
     <div class="leiste" style="margin-top:16px">
-      <button name="status" value="entwurf">Als Entwurf</button>
-      <button class="primaer" name="status" value="veroeffentlicht">Veröffentlichen</button>
+      {{if .D.Darf}}{{if eq $s.Status "veroeffentlicht"}}
+      <button class="primaer" name="status" value="veroeffentlicht" data-speichern>Speichern</button>
+      <button name="status" value="entwurf">Zurück auf Entwurf</button>
+      {{else}}
+      <button name="status" value="entwurf" data-speichern>Als Entwurf</button>
+      {{if .Redaktion}}<button class="primaer" name="status" value="veroeffentlicht">Veröffentlichen</button>{{end}}
+      {{end}}{{end}}
     </div>
-    {{if $s.ID}}<p class="muted klein">{{if $s.Oeffentlich}}Veröffentlicht {{datum $s.VeroeffentlichtAm}} unter <a href="{{$s.Pfad}}" target="_blank">{{$s.Pfad}}</a>{{else}}Entwurf, nicht öffentlich{{end}}</p>{{end}}
+    {{if $s.ID}}<p class="muted klein">{{if $s.Oeffentlich}}Veröffentlicht {{datum $s.VeroeffentlichtAm}} unter <a href="{{$s.Pfad}}" target="_blank">{{$s.Pfad}}</a>{{else if $s.Geplant}}Geplant für {{datum $s.VeroeffentlichtAm}}{{else}}Entwurf, nicht öffentlich{{end}}</p>{{end}}
     {{if .D.Medien}}
     <h3>Medien einfügen</h3>
-    <div class="medienwahl">{{range .D.Medien}}<button type="button" class="klein" data-md="{{if .Bild}}![{{.Name}}](/medien/{{.ID}}){{else}}[{{.Name}}](/medien/{{.ID}}){{end}}" title="{{.Name}}">{{if .Bild}}<img src="/medien/{{.ID}}" alt="" width="40" height="40" style="object-fit:cover;border-radius:4px">{{else}}{{.Name}}{{end}}</button>{{end}}</div>
+    <div class="medienwahl">{{range .D.Medien}}<button type="button" class="klein" data-md="{{if .Bild}}![{{.Name}}](/medien/{{.ID}}?b=960){{else}}[{{.Name}}](/medien/{{.ID}}){{end}}" title="{{.Name}}">{{if .Bild}}<img src="/medien/{{.ID}}?b=480" alt="" loading="lazy" width="40" height="40" style="object-fit:cover;border-radius:4px">{{else}}{{.Name}}{{end}}</button>{{end}}</div>
     {{end}}
   </div>
 </form>
-{{if $s.ID}}
+{{if and $s.ID .D.Darf}}
 <form method="post" action="/admin/seite/{{$s.ID}}/loeschen" data-frage="Seite mit allen Versionen löschen?" style="margin-top:14px">
   <input type="hidden" name="token" value="{{.Token}}"><button class="gefahr">Seite löschen</button>
 </form>

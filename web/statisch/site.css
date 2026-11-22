@@ -31,3 +31,26 @@ th, td { border-bottom: 1px solid var(--rand); padding: 6px 8px; text-align: lef
 .s-beitrag span:last-child { color: var(--muted); }
 .s-fuss { border-top: 1px solid var(--rand); color: var(--muted); font: 13px system-ui, sans-serif; padding: 20px 0 30px; }
 .vorschau { background: #b7791f; color: #fff; text-align: center; font: 600 13px system-ui, sans-serif; padding: 5px; }
+main { overflow-wrap: anywhere; }
+.s-sprachen { width: 100%; display: flex; gap: 10px; justify-content: flex-end; font-size: 13px; }
+.s-sprachen a { color: var(--muted); text-transform: uppercase; }
+table { display: block; overflow-x: auto; }
+
+/* Design "klar": serifenlos, breiter, große Überschriften */
+.design-klar { font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif; }
+.design-klar .s-innen { max-width: 920px; }
+.design-klar h1 { font-size: clamp(34px, 7vw, 52px); letter-spacing: -0.035em; }
+.design-klar .s-kopf { border-bottom: 0; }
+
+/* Design "magazin": kräftiger Kopf, Beiträge als Karten */
+.design-magazin .s-kopf { background: #171717; color: #fff; border: 0; }
+.design-magazin .s-kopf nav a, .design-magazin .s-unter, .design-magazin .s-sprachen a { color: #c4c4c4; }
+.design-magazin .s-kopf nav a:hover, .design-magazin .s-kopf nav a[aria-current] { color: #fff; }
+.design-magazin .s-innen { max-width: 860px; }
+.design-magazin h1 { font-family: Georgia, "Iowan Old Style", serif; font-size: clamp(34px, 7vw, 48px); }
+.design-magazin .s-beitraege { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); }
+.design-magazin .s-beitrag { padding: 16px; border: 1px solid var(--rand); border-radius: 10px; }
+main.s-innen { padding-top: 40px; padding-bottom: 64px; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
+body > .s-kopf, body > .s-fuss, body > main { width: 100%; }
+body > main { flex: 1; }

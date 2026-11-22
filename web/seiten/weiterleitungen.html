@@ -1,0 +1,14 @@
+{{define "inhalt"}}{{$t := .Token}}
+<h1>Weiterleitungen</h1>
+<form method="post" action="/admin/weiterleitungen" class="karte leiste">
+  <input type="hidden" name="token" value="{{$t}}">
+  <input type="text" name="von" placeholder="/alter-pfad" aria-label="Von" required class="code halb">
+  <input type="text" name="nach" placeholder="/neuer-pfad oder https://…" aria-label="Nach" required class="code halb">
+  <button class="primaer">Anlegen</button>
+</form>
+{{if .D.Liste}}<table>
+<tr><th>Von</th><th>Nach</th><th></th></tr>
+{{range .D.Liste}}<tr><td class="code umbruch">{{.Von}}</td><td class="code umbruch">{{.Nach}}</td><td>
+<form method="post" action="/admin/weiterleitungen/loeschen"><input type="hidden" name="token" value="{{$t}}"><input type="hidden" name="von" value="{{.Von}}"><button class="klein gefahr">Löschen</button></form></td></tr>{{end}}
+</table>{{else}}<div class="leer"><strong>Keine Weiterleitungen</strong>Ändert sich der Pfad einer veröffentlichten Seite, entsteht hier von selbst eine.</div>{{end}}
+{{end}}

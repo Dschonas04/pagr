@@ -1,0 +1,8 @@
+{{define "inhalt"}}{{$s := .D.S}}
+<div class="leiste"><h1>Vergleich: {{$s.Titel}}</h1>
+<a class="knopf" href="/admin/seite/{{$s.ID}}/versionen">Zurück</a>
+<a class="knopf primaer" href="/admin/seite/{{$s.ID}}?version={{.D.V.ID}}">Diese Version bearbeiten</a></div>
+<p class="muted klein">Fassung vom {{datum .D.V.Erstellt}} gegen den jetzigen Stand: rot entfiel, grün kam dazu.</p>
+{{if .D.Geht}}<div class="vergleich code">{{range .D.Zeilen}}<div class="{{.Art}}">{{if .Text}}{{.Text}}{{else}}&nbsp;{{end}}</div>{{end}}</div>
+{{else}}<div class="leer">Zum Vergleichen sind die Fassungen zu lang.</div>{{end}}
+{{end}}

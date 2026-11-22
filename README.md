@@ -1,53 +1,59 @@
-# Pagr
+<p align="center"><img src="docs/logo.svg" width="76" alt=""></p>
+<h1 align="center">Pagr</h1>
+<p align="center">Content-Management für kleine Websites: schreiben, planen, veröffentlichen, sauber ausliefern.</p>
 
-Content-Management-System für Websites: Seiten, Beiträge und Medien pflegen, sauber ausliefern.
+![Editor mit Vorschau](docs/editor.png)
 
-**Stand: 0.1.** Seiten und Beiträge in Markdown (ohne rohes HTML), Entwurf
-und Veröffentlichen, Vorschau, Versionen mit Zurückholen, Menü, Medien
-(Bilder, PDF, Video, Audio), Beitragsliste, Sitemap und robots.txt, eigenes
-ruhiges Standarddesign. Redaktion unter `/admin` mit Anmeldung über Keycloak,
-die Website selbst ist öffentlich. Mehrsprachigkeit, Designs und statischer
-Export kommen noch.
+## Was es kann
 
-## Geplant
+| Bereich | Funktionen |
+|---|---|
+| Schreiben | Markdown ohne rohes HTML, Bausteine, Vorschau, Absätze mit Alt und Pfeil verschieben |
+| Veröffentlichen | Entwürfe, Zeitplan, 50 Versionen je Seite mit Vergleich |
+| Aufbau | Seiten, Beiträge, Menü, sprechende Pfade, Weiterleitungen (beim Umbenennen von selbst) |
+| Sprachen | je Seite eine Sprache, Übersetzungen verweisen aufeinander, Menü je Sprache |
+| Medien | Bilder, PDF, Video, Audio, Bildbreiten 480, 960 und 1600 über `?b=` |
+| Auffindbar | Beschreibung, Open Graph, Canonical, Sitemap, RSS unter `/feed.xml` |
+| Designs | Ruhig, Klar, Magazin, jeweils hell und dunkel |
+| Export | die ganze veröffentlichte Website als ZIP für jeden Webserver |
 
-* **Seiten und Beiträge** mit Blockeditor, Entwürfen und zeitgesteuerter Veröffentlichung
-* **Versionen** jeder Seite, Vergleich und Zurückholen
-* **Medienbibliothek** mit Bildgrößen und WebP, Ablage lokal oder in S3 (MinIO)
-* **Menüs und Seitenbaum**, sprechende Adressen, Weiterleitungen
-* **Designs** als Go-Templates, ein schlichtes Standarddesign dabei
-* **Mehrsprachig**: jede Seite in mehreren Sprachen, Sprachwahl im Menü
-* **SEO**: Titel, Beschreibung, Sitemap, Open Graph, schnelle Auslieferung mit Cache
-* **Rollen** Autor, Redaktion, Admin; Anmeldung über Keycloak
-* **Statischer Export** der ganzen Website als Alternative zur Live-Auslieferung
+## Rollen
 
-## Schritte
-
-1. Datenmodell, Seiten anlegen und als HTML ausliefern
-2. Redaktionsoberfläche mit Blockeditor und Entwürfen
-3. Medienbibliothek
-4. Menüs, Designs, Sitemap
-5. Rollen und Keycloak
-6. Versionen, Mehrsprachigkeit, statischer Export
+| Rolle | darf |
+|---|---|
+| Autor | eigene Entwürfe schreiben, Medien hochladen (Vorgabe für neue Personen) |
+| Redaktion | alles veröffentlichen, Menü, Medien, Weiterleitungen, Export |
+| Admin | dazu Einstellungen, Personen, Anmeldung |
 
 ## Starten
 
 ```bash
 cp .env.beispiel .env            # Kennwort für die Datenbank eintragen
 docker compose up -d --build
+docker compose logs pagr         # Link mit Einrichtungscode
 ```
 
-Danach unter `http://<host>:8360`. Im Homelab kommt TLS über Caddy mit
-der Homelab-CA davor, der Dienst selbst lauscht dann auf `127.0.0.1:28360`.
+Die Website liegt unter `http://<host>:8360`, die Redaktion unter `/admin`. Das
+erste Konto aus dem Link verwaltet die App. Wer nur OIDC benutzt, trägt den
+Admin in `PAGR_ADMIN` ein. Für den Betrieb gehört TLS davor.
+
+## Grenzen
+
+* Medien liegen lokal im Volume, nicht in S3.
+* WebP wird gelesen, verkleinerte Fassungen entstehen als JPEG oder PNG.
+* Gedrehte Handyfotos, GIF und AVIF werden im Original ausgeliefert.
+* Medien sind für alle abrufbar, die ihre Adresse kennen, auch vor dem Veröffentlichen.
 
 ## Entwickeln
 
 ```bash
 go run .
 go test ./...
+# mit Datenbank; sie wird geleert, der Name muss mit pruef beginnen
+PAGR_TEST_DB=postgres://.../pruef_pagr go test ./...
 ```
 
-Go 1.27.4, Datenbank PostgreSQL. Das Schema steht in `schema.sql`.
+Go 1.27.4, PostgreSQL 17. Das Schema steht in `schema.sql`.
 
 ## Lizenz
 

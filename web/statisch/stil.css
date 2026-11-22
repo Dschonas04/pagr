@@ -161,3 +161,14 @@ dl.eigenschaften dd { margin: 0; overflow-wrap: anywhere; }
 /* Pagr */
 .medienwahl { display: flex; flex-wrap: wrap; gap: 6px; }
 .medienwahl button { padding: 3px; }
+.umbruch { overflow-wrap: anywhere; }
+.halb { flex: 1; width: auto; min-width: 180px; }
+.eng { margin: 0; }
+.eng select { width: auto; }
+.bausteine { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.schau { margin-top: 12px; padding: 6px 16px; border: 1px solid var(--rand); border-radius: var(--radius2); overflow-wrap: anywhere; }
+.schau img { max-width: 100%; height: auto; }
+.vergleich { background: var(--flaeche); border: 1px solid var(--rand); border-radius: var(--radius); overflow: hidden; }
+.vergleich div { padding: 1px 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vergleich .plus { background: color-mix(in srgb, var(--gut) 14%, transparent); }
+.vergleich .minus { background: color-mix(in srgb, var(--schlecht) 14%, transparent); }
