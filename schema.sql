@@ -43,9 +43,8 @@ INSERT INTO seiten (pfad, titel, inhalt, status, im_menue, veroeffentlicht_am)
 	VALUES ('/', 'Willkommen', E'Diese Website läuft mit **Pagr**.\n\nInhalte pflegst du unter [/admin](/admin).', 'veroeffentlicht', true, now())
 	ON CONFLICT DO NOTHING;
 
--- Wer die App verwaltet. Die erste angemeldete Person trägt sich ein.
+-- Wer die App eingerichtet hat und verwaltet. Dazu kommt PAGR_ADMIN.
 CREATE TABLE IF NOT EXISTS admins (
 	kennung text PRIMARY KEY,
-	erster  boolean UNIQUE,
 	seit    timestamptz NOT NULL DEFAULT now()
 );

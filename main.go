@@ -19,6 +19,7 @@ import (
 )
 
 type App struct {
+	admins []string // Vorgabe des Betreibers
 	db     *pgxpool.Pool
 	sso    *SSO
 	v      Vorlagen
@@ -37,6 +38,8 @@ func main() {
 		site:   ladeSite(),
 		medien: umgebung("PAGR_MEDIEN", "./medien"),
 	}
+	a.admins = adminListe(umgebung("PAGR_ADMIN", ""))
+	a.sso.ErstesKonto = a.ersterAdmin
 	a.sso.Frei = []string{"/statisch/", "/healthz"}
 	a.sso.Startseite = "/admin"
 	if err := os.MkdirAll(a.medien, 0o750); err != nil {
