@@ -2,6 +2,15 @@
 <h1 align="center">Pagr</h1>
 <p align="center">Content-Management für kleine Websites: schreiben, planen, veröffentlichen, sauber ausliefern.</p>
 
+<p align="center">
+
+[![prüfen](https://github.com/Dschonas04/pagr/actions/workflows/pruefen.yml/badge.svg)](https://github.com/Dschonas04/pagr/actions/workflows/pruefen.yml)
+[![Go 1.27](https://img.shields.io/badge/Go-1.27-00ADD8)](https://go.dev)
+[![PostgreSQL 17](https://img.shields.io/badge/PostgreSQL-17-4169E1)](https://www.postgresql.org)
+[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue.svg)](LICENSE)
+
+</p>
+
 ![Editor mit Vorschau](docs/editor.png)
 
 ## Was es kann
